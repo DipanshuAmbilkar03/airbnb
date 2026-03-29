@@ -2,7 +2,7 @@ const Listing =  require("../models/listing.js");
 const { listingSchema } = require("../schema.js");
 
 module.exports.index = async (req,res) => {
-    const allListing  = await Listing.find({});
+    const allListing  = await Listing.find({}).populate("reviews");
     res.render('./listings/index.ejs', { allListing });
 
     // Listing.find({}).then(res => {

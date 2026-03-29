@@ -78,28 +78,58 @@
         </div>
     </div>
 
-<div class="row row-cols-lg-5 row-cols-md-2 row-cols-sm-1 mt-3">
-    <% for(let listing of allListing) { %>
-        <a href="/listings/<%= listing._id %>" class="linking-link">
-            <div class="card col listing-card">
-                <img src="<%= listing.image.url %>" 
-                class="card-img-top" alt="listings" 
-                style="height: 20rem;">
-
-                <!-- card image overlay -->
-                <div class="card-img-overlay">20% OFF</div>
-                <div class="card-body">
-                    <p class="card-text">
-                    <b>Title : <%= listing.title %></b>
-                    <br>
-                    Price : &#8377; <%= listing.price.toLocaleString("en-IN") %>/night
+<section class="stay-grid">
+    <% for(let listing of allListing) { 
+        const reviewArray = Array.isArray(listing.reviews) ? listing.reviews : [];
+        const reviewCount = reviewArray.length;
+        const ratingTotal = reviewArray.reduce((sum , review) => sum + (review.rating || 0) , 0);
+        const avgRatingValue = reviewCount ? ratingTotal / reviewCount : null;
+        const displayRating = avgRatingValue ? avgRatingValue.toFixed(2) : null;
+        const badgeText = avgRatingValue && avgRatingValue >= 4.5 && reviewCount >= 3 ? "Guest favourite" : null;
+        const locationLabel = listing.location || "";
+        const countryLabel = listing.country || "";
+    %>
+        <a href="/listings/<%= listing._id %>" class="stay-card linking-link">
+            <div class="stay-card__media">
+                <img src="<%= listing.image.url %>" alt="<%= listing.title %>">
+                <% if(badgeText) { %>
+                    <span class="stay-card__badge"><%= badgeText %></span>
+                <% } %>
+                <span class="stay-card__wishlist" aria-hidden="true">
+                    <i class="fa-regular fa-heart"></i>
+                </span>
+            </div>
+            <div class="stay-card__body">
+                <div class="stay-card__title-row">
+                    <p class="stay-card__title"><%= listing.title %></p>
+                    <div class="stay-card__rating">
+                        <i class="fa-solid fa-star"></i>
+                        <span><%= displayRating ? displayRating : "New" %></span>
+                    </div>
+                </div>
+                <% if(locationLabel || countryLabel) { %>
+                    <p class="stay-card__meta">
+                        <%= locationLabel %><%= locationLabel && countryLabel ? ", " : "" %><%= countryLabel %>
+                    </p>
+                <% } else { %>
+                    <p class="stay-card__meta">India</p>
+                <% } %>
+                <p class="stay-card__price">
+                    &#8377; <%= listing.price.toLocaleString("en-IN") %>
+                    <span>night</span>
                     <i class="tax-info">+18% GST</i>
                 </p>
+                <p class="stay-card__subtext">
+                    <% if(reviewCount) { %>
+                        <%= reviewCount %> review<%= reviewCount > 1 ? "s" : "" %>
+                    <% } else { %>
+                        Be the first to review
+                    <% } %>
+                </p>
             </div>
-        </div>
         </a>
     <% } %>
-</div>
+</section>
 
 <script>
     let taxSwitch = document.getElementById("flexSwitchCheckDefault");
