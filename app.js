@@ -195,6 +195,10 @@ app.use((err, req, res, next) => {
     });
 });
 
-app.listen(port, () => {
-    console.log(`app is listening to port ${port}`)
-}); 
+if (require.main === module) {
+    app.listen(port, () => {
+        console.log(`app is listening to port ${port}`)
+    });
+}
+
+module.exports = app;

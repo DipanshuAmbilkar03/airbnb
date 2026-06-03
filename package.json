@@ -8,7 +8,7 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
-    "check": "node --check app.js && node --check middleware.js && node --check controllers/listings.js && node --check controllers/reviews.js && node --check controllers/user.js && node --check controllers/home.js && node --check controllers/admin.js && node --check routes/listings.js && node --check routes/review.js && node --check routes/user.js && node --check routes/admin.js && node --check cloudConfig.js && node --check tools/ensureAdmin.js",
+    "check": "node --check app.js && node --check api/index.js && node --check middleware.js && node --check controllers/listings.js && node --check controllers/reviews.js && node --check controllers/user.js && node --check controllers/home.js && node --check controllers/admin.js && node --check routes/listings.js && node --check routes/review.js && node --check routes/user.js && node --check routes/admin.js && node --check cloudConfig.js && node --check tools/ensureAdmin.js",
     "test": "npm run check",
     "security:audit": "npm audit --audit-level=moderate",
     "admin:ensure": "node tools/ensureAdmin.js"
