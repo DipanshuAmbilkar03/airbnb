@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const wrapAsync = require("../utils/wrapAsync.js");
 const adminController = require("../controllers/admin.js");
-const { isLoggedIn, isAdmin, validateObjectId } = require("../middleware.js");
+const { isLoggedIn, isAdmin, validateObjectId } = require("../appMiddleware.js");
 
 router.use(isLoggedIn, isAdmin);
 

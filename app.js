@@ -21,7 +21,7 @@ const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
 const rateLimit = require("express-rate-limit");
 const compression = require("compression");
-const { ensureCsrfToken, verifyCsrfToken } = require("./middleware.js");
+const { ensureCsrfToken, verifyCsrfToken } = require("./appMiddleware.js");
 
 // Mongoose connections
 const dbUrl = process.env.ATLASDB;
