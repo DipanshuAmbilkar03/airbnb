@@ -1,0 +1,81 @@
+<% layout("./layouts/boilerplate") %>
+
+<section class="admin-shell">
+    <div class="admin-heading">
+        <div>
+            <p class="eyebrow">Admin</p>
+            <h1>Control center</h1>
+        </div>
+        <div class="admin-tabs">
+            <a href="/admin/listings">Listings</a>
+            <a href="/admin/users">Users</a>
+            <a href="/admin/reviews">Reviews</a>
+        </div>
+    </div>
+
+    <section class="admin-stat-grid">
+        <div>
+            <span>Listings</span>
+            <strong><%= stats.listingCount %></strong>
+        </div>
+        <div>
+            <span>Users</span>
+            <strong><%= stats.userCount %></strong>
+        </div>
+        <div>
+            <span>Reviews</span>
+            <strong><%= stats.reviewCount %></strong>
+        </div>
+        <div>
+            <span>Admins</span>
+            <strong><%= stats.adminCount %></strong>
+        </div>
+    </section>
+
+    <section class="admin-grid">
+        <article class="admin-panel">
+            <div class="admin-panel__heading">
+                <h2>Recent listings</h2>
+                <a href="/admin/listings" class="text-link">Manage</a>
+            </div>
+            <div class="admin-list">
+                <% for (let listing of recentListings) { %>
+                    <a href="/listings/<%= listing._id %>">
+                        <span><%= listing.title %></span>
+                        <small><%= listing.owner && listing.owner.username ? listing.owner.username : "No owner" %></small>
+                    </a>
+                <% } %>
+            </div>
+        </article>
+
+        <article class="admin-panel">
+            <div class="admin-panel__heading">
+                <h2>Recent users</h2>
+                <a href="/admin/users" class="text-link">Manage</a>
+            </div>
+            <div class="admin-list">
+                <% for (let user of recentUsers) { %>
+                    <span>
+                        <span><%= user.username %></span>
+                        <small><%= user.email %><%= user.isAdmin ? " · Admin" : "" %></small>
+                    </span>
+                <% } %>
+            </div>
+        </article>
+
+        <article class="admin-panel">
+            <div class="admin-panel__heading">
+                <h2>Recent reviews</h2>
+                <a href="/admin/reviews" class="text-link">Moderate</a>
+            </div>
+            <div class="admin-list">
+                <% for (let review of recentReviews) { %>
+                    <span>
+                        <span><%= review.comment.length > 80 ? `${review.comment.slice(0, 80)}...` : review.comment %></span>
+                        <small><%= review.author && review.author.username ? review.author.username : "Guest" %> · <%= review.rating %> stars</small>
+                    </span>
+                <% } %>
+            </div>
+        </article>
+    </section>
+</section>

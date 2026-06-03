@@ -1,4 +1,4 @@
-if(process.env.NODE_ENV != 'Production'){
+if (process.env.NODE_ENV !== "production") {
     require('dotenv').config();
 }
 
@@ -7,52 +7,121 @@ const mongoose = require("mongoose");
 const express = require("express");
 const app = express();
 const path = require("path");
-const port = 8080; 
+const port = process.env.PORT || 8080;
 const methodOverride = require('method-override');
 const ejsMate = require("ejs-mate");
 const expressError = require("./utils/expressError.js");
 const session = require("express-session");
-const MongoStore = require('connect-mongo');
+const { MongoStore } = require('connect-mongo');
 const flash = require("connect-flash");
 const passport = require("passport"); 
 const LocalStrategy = require("passport-local");
 const User = require("./models/user.js");
+const helmet = require("helmet");
+const mongoSanitize = require("express-mongo-sanitize");
+const rateLimit = require("express-rate-limit");
+const compression = require("compression");
+const { ensureCsrfToken, verifyCsrfToken } = require("./middleware.js");
 
 // Mongoose connections
-let dbUrl = process.env.ATLASDB;
+const dbUrl = process.env.ATLASDB;
+const sessionSecret = process.env.SECRET;
+const isProduction = process.env.NODE_ENV === "production";
 
-const store = MongoStore.create({
+if (!dbUrl) {
+    throw new Error("ATLASDB must be configured before starting the app.");
+}
+
+if (!sessionSecret) {
+    throw new Error("SECRET must be configured before starting the app.");
+}
+
+const store = new MongoStore({
     mongoUrl: dbUrl,
     crypto: {
-        secret: process.env.SECRET,
+        secret: sessionSecret,
     },
-    touchAfter: 24 * 3600 
-})
+    touchAfter: 24 * 3600,
+});
 
-store.on("error" , () => {
+store.on("error" , (err) => {
     console.log("Error in MONGO SESSION STORE", err);
 });
 
 // session 
 const sessionOption = {
+    name: "wanderlust.sid",
     store,
-    secret : process.env.SECRET,
+    secret : sessionSecret,
     resave : false,
-    saveUninitialized : true, 
+    saveUninitialized : false,
     cookie: {
-        expires : Date.now() + 7 * 24 * 60 * 60 * 1000,
         maxAge : 7 * 24 * 60 * 60 * 1000,
-        // for cross scripting attack
         httpOnly : true,
+        sameSite: "lax",
+        secure: isProduction,
     },
 };
+
+// express routers
+const listingRouter = require("./routes/listings.js");
+const reviewsRouter = require("./routes/review.js");
+const userRouter = require("./routes/user.js");
+const adminRouter = require("./routes/admin.js");
+
+// middleWares
+app.set("view engine" , "ejs");
+app.set("views" , path.join(__dirname , "./views"));
+app.engine("ejs", ejsMate); 
+app.disable("x-powered-by");
+app.set("trust proxy", 1);
+
+app.use(compression());
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            baseUri: ["'self'"],
+            formAction: ["'self'"],
+            frameAncestors: ["'self'"],
+            imgSrc: ["'self'", "data:", "https:", "https://images.unsplash.com", "https://res.cloudinary.com"],
+            scriptSrc: ["'self'", "https://cdn.jsdelivr.net"],
+            styleSrc: ["'self'", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com", "'unsafe-inline'"],
+            fontSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://fonts.gstatic.com"],
+            connectSrc: ["'self'"],
+            objectSrc: ["'none'"],
+            upgradeInsecureRequests: isProduction ? [] : null,
+        },
+    },
+    crossOriginEmbedderPolicy: false,
+}));
+
+app.use(rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 500,
+    standardHeaders: "draft-7",
+    legacyHeaders: false,
+}));
+
+app.use(["/login", "/signup"], rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 20,
+    standardHeaders: "draft-7",
+    legacyHeaders: false,
+}));
+
+app.use(express.urlencoded({ extended : true, limit: "100kb" }));
+app.use(mongoSanitize());
+app.use(methodOverride('_method'));
+app.use(express.static(path.join(__dirname, "/public"), {
+    maxAge: isProduction ? "7d" : 0,
+}));
 
 // session middleware
 app.use(session(sessionOption));
 
 // flash 
 app.use(flash());
-
 
 // passport initialization and session setup
 app.use(passport.initialize());
@@ -65,39 +134,17 @@ passport.use(new LocalStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
+app.use(ensureCsrfToken);
+
 app.use((req,res,next) => {
     res.locals.success = req.flash("success");
     res.locals.error = req.flash("error");
     res.locals.currUser = req.user;
+    res.locals.searchQuery = typeof req.query.search === "string" ? req.query.search : "";
     next();
-})
+});
 
-// demo user
-// app.get("/demouser", async (req,res) => {
-//     let fakeUser = ({
-//         email : "fake@gmail.com",
-//         username : "fake",
-//     });
-
-//     // static method
-//     let registeredUser = await User.register(fakeUser,"fakepass");
-//     res.send(registeredUser);
-// })
-
-// express routers
-const listingRouter = require("./routes/listings.js");
-const reviewsRouter = require("./routes/review.js");
-const userRouter = require("./routes/user.js");
-
-// middleWares
-app.set("view engine" , "ejs");
-app.set("views" , path.join(__dirname , "./views"));
-app.use(express.urlencoded({extended : true}));
-app.use(methodOverride('_method'));
-
-// use ejs-locals for all ejs templates:
-app.engine("ejs", ejsMate); 
-app.use(express.static(path.join(__dirname, "/public")))
+app.use(verifyCsrfToken);
 
 
 // main connection
@@ -108,6 +155,7 @@ main()
     .catch((err) => console.log(err));
 
 async function main() {
+    mongoose.set("sanitizeFilter", true);
     await mongoose.connect(dbUrl);
 }
 
@@ -115,29 +163,10 @@ async function main() {
 app.use("/listings" , listingRouter); 
 // reviews
 app.use("/listings/:id/reviews" , reviewsRouter);
+// admin
+app.use("/admin", adminRouter);
 // users
 app.use("/" , userRouter);
-
-// app.get("/", (req,res) => {
-//     res.send("this is root directory.")
-//     // console.log("this is root route.");
-// })
-
-// data initialization 
-// app.get("/testListing", async (req,res) => {
-    // let sampleListing = new Listing(
-    //     {
-    //         title : "goa",
-    //         description : "fantacy of the beach",
-    //         price : 1200,
-    //         location : "beach",
-    //         country : "India",
-    //     }
-    // );
-    // await sampleListing.save();
-    // console.log("sample was saved.");
-//     res.send("successfully tested")
-// });
 
 // error for an entirly different api route
 app.all("*" , (req, res, next) => {
@@ -151,19 +180,21 @@ app.all("*" , (req, res, next) => {
 
 // error middleware using expressclass
 app.use((err, req, res, next) => {
+    if (err.name === "MulterError") {
+        err.statusCode = 400;
+        err.message = err.message || "The uploaded file could not be processed.";
+    }
+
     let {statusCode=500, message="something went wrong"} = err;
-    // res.status(statusCode).send(message);
-
-    // for message handling
-    // res.render("error.ejs",{message});
-
-    // for error handling
-    res.status(statusCode).render("error.ejs", {err});
-
-    // for random error handling
-    // res.send("something failed");
-})
+    const safeMessage = isProduction && statusCode === 500 ? "Something went wrong." : message;
+    res.status(statusCode).render("error.ejs", {
+        err: {
+            statusCode,
+            message: safeMessage,
+        },
+    });
+});
 
 app.listen(port, () => {
-    console.log("app is listening to port 8080")
+    console.log(`app is listening to port ${port}`)
 }); 

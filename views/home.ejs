@@ -1,0 +1,86 @@
+<% layout("./layouts/boilerplate") %>
+
+<section class="home-hero">
+    <div class="home-hero__content">
+        <p class="eyebrow">Curated stays for weekends, work trips, and long escapes</p>
+        <h1>WanderLust</h1>
+        <p>Find memorable homes from hosts who care about comfort, location, and the small details that make a trip feel easy.</p>
+        <form class="hero-search" method="GET" action="/listings">
+            <div>
+                <label for="hero-search">Where to?</label>
+                <input id="hero-search" name="search" type="search" placeholder="Search city, country, or stay" autocomplete="off">
+            </div>
+            <button class="btn btn-search" type="submit">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <span>Search</span>
+            </button>
+        </form>
+    </div>
+</section>
+
+<section class="home-stats" aria-label="WanderLust marketplace stats">
+    <div>
+        <strong><%= totalListings %>+</strong>
+        <span>listed stays</span>
+    </div>
+    <% for (let country of topCountries) { %>
+        <a href="/listings?search=<%= encodeURIComponent(country._id) %>">
+            <strong><%= country.count %></strong>
+            <span><%= country._id %></span>
+        </a>
+    <% } %>
+</section>
+
+<section class="section-heading">
+    <div>
+        <p class="eyebrow">Fresh picks</p>
+        <h2>Featured stays</h2>
+    </div>
+    <a href="/listings" class="text-link">View all listings</a>
+</section>
+
+<section class="stay-grid stay-grid--compact">
+    <% for(let listing of featuredListings) {
+        const reviewArray = Array.isArray(listing.reviews) ? listing.reviews : [];
+        const reviewCount = reviewArray.length;
+        const ratingTotal = reviewArray.reduce((sum , review) => sum + (review.rating || 0) , 0);
+        const avgRatingValue = reviewCount ? ratingTotal / reviewCount : null;
+        const displayRating = avgRatingValue ? avgRatingValue.toFixed(2) : null;
+        const imageUrl = listing.image && listing.image.url ? listing.image.url : "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80";
+    %>
+        <a href="/listings/<%= listing._id %>" class="stay-card linking-link">
+            <div class="stay-card__media">
+                <img src="<%= imageUrl %>" alt="<%= listing.title %>">
+                <span class="stay-card__wishlist" aria-hidden="true">
+                    <i class="fa-regular fa-heart"></i>
+                </span>
+            </div>
+            <div class="stay-card__body">
+                <div class="stay-card__title-row">
+                    <p class="stay-card__title"><%= listing.title %></p>
+                    <div class="stay-card__rating">
+                        <i class="fa-solid fa-star"></i>
+                        <span><%= displayRating ? displayRating : "New" %></span>
+                    </div>
+                </div>
+                <p class="stay-card__meta"><%= listing.location %>, <%= listing.country %></p>
+                <p class="stay-card__price">
+                    &#8377; <%= listing.price.toLocaleString("en-IN") %>
+                    <span>night</span>
+                </p>
+            </div>
+        </a>
+    <% } %>
+</section>
+
+<section class="host-band">
+    <div>
+        <p class="eyebrow">Open your doors</p>
+        <h2>Earn from a place guests will remember.</h2>
+        <p>Share your space with travelers looking for clean design, honest details, and stays that feel personal.</p>
+    </div>
+    <a href="/listings/new" class="btn btn-dark">
+        <i class="fa-solid fa-house-circle-check"></i>
+        <span>Start hosting</span>
+    </a>
+</section>

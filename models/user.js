@@ -5,9 +5,18 @@ const passportLocalMongoose = require("passport-local-mongoose");
 const userSchema = new Schema({
     email: {
         type : String,
-        require : true,
+        required : true,
+        lowercase: true,
+        trim: true,
+        unique: true,
+    },
+    isAdmin: {
+        type: Boolean,
+        default: false,
     }
-})
+}, { timestamps: true });
+
+userSchema.index({ isAdmin: 1 });
 
 userSchema.plugin(passportLocalMongoose);
 

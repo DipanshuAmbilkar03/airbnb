@@ -1,147 +1,123 @@
 <% layout("./layouts/boilerplate") %>
 
-<!-- <h1>All Listings</h1> -->
-    <!-- <form method="GET" action="listings/new" >
-        <button>Create new Listings</button>
-    </form> -->
-
-    <div id="filters">
-        <!-- trending icon -->
-        <div class="filter">
-            <div><i class="fa-solid fa-fire"></i></div>
-            <p>Trending</p>
-        </div>
-        <!-- Rooms icon -->
-        <div class="filter">
-            <div><i class="fa-solid fa-bed"></i></div>
-            <p>Rooms</p>
-        </div>
-        <!-- Mountain City icon -->
-        <div class="filter">
-            <div><i class="fa-solid fa-mountain-city"></i></div>
-            <p>Mountain City</p>
-        </div>
-        <!-- Farms icon -->
-        <div class="filter">
-            <div><i class="fa-solid fa-cow"></i></div>
-            <p>Farms</p>
-        </div>
-        <!-- Beach icon -->
-        <div class="filter">
-            <div><i class="fa-solid fa-umbrella-beach"></i></div>
-            <p>Beach</p>
-        </div>
-        <!-- arctic icon -->
-        <div class="filter">
-            <div><i class="fa-regular fa-snowflake"></i></div>
-            <p>Arctic Land</p>
-        </div>
-        <!-- Castles icon -->
-        <div class="filter">
-            <div><i class="fa-brands fa-fort-awesome"></i></div>
-            <p>Castles</p>
-        </div>
-        <!-- swimming icon -->
-        <div class="filter">
-            <div><i class="fa-solid fa-person-swimming"></i></i></div>
-            <p>swimming</p>
-        </div>
-        <!-- Dome icon -->
-        <div class="filter">
-            <div><i class="fa-solid fa-landmark-dome"></i></div>
-            <p>Dome</p>
-        </div>
-        <!-- skiing icon -->
-        <div class="filter">
-            <div><i class="fa-solid fa-person-skiing"></i></div>
-            <p>Skiing</p>
-        </div>
-        <!-- Museum icon -->
-        <div class="filter">
-            <div><i class="fa-solid fa-building-columns"></i></div>
-            <p>Museum</p>
-        </div>  
-        <!-- Sailing icon -->
-        <div class="filter">
-            <div><i class="fa-solid fa-sailboat"></i></div>
-            <p>Sailing</p>
-        </div>
-        <div class="filter">
-            <div><i class="fa-solid fa-tent"></i></div>
-            <p>Camping</p>
-        </div>
-        <div class="tax-switch">
-            <div class="form-check-reverse form-switch">
-                <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault">
-                <label class="form-check-label" for="flexSwitchCheckDefault">Display total after taxes</label>
-            </div>
-        </div>
+<section class="listing-toolbar">
+    <div>
+        <p class="eyebrow">Explore stays</p>
+        <h1><%= filters.search ? `Results for "${filters.search}"` : "Book your next stay" %></h1>
     </div>
+    <a href="/listings/new" class="btn btn-dark">
+        <i class="fa-solid fa-plus"></i>
+        <span>Add listing</span>
+    </a>
+</section>
 
-<section class="stay-grid">
-    <% for(let listing of allListing) { 
-        const reviewArray = Array.isArray(listing.reviews) ? listing.reviews : [];
-        const reviewCount = reviewArray.length;
-        const ratingTotal = reviewArray.reduce((sum , review) => sum + (review.rating || 0) , 0);
-        const avgRatingValue = reviewCount ? ratingTotal / reviewCount : null;
-        const displayRating = avgRatingValue ? avgRatingValue.toFixed(2) : null;
-        const badgeText = avgRatingValue && avgRatingValue >= 4.5 && reviewCount >= 3 ? "Guest favourite" : null;
-        const locationLabel = listing.location || "";
-        const countryLabel = listing.country || "";
-    %>
-        <a href="/listings/<%= listing._id %>" class="stay-card linking-link">
-            <div class="stay-card__media">
-                <img src="<%= listing.image.url %>" alt="<%= listing.title %>">
-                <% if(badgeText) { %>
-                    <span class="stay-card__badge"><%= badgeText %></span>
-                <% } %>
-                <span class="stay-card__wishlist" aria-hidden="true">
-                    <i class="fa-regular fa-heart"></i>
-                </span>
-            </div>
-            <div class="stay-card__body">
-                <div class="stay-card__title-row">
-                    <p class="stay-card__title"><%= listing.title %></p>
-                    <div class="stay-card__rating">
-                        <i class="fa-solid fa-star"></i>
-                        <span><%= displayRating ? displayRating : "New" %></span>
-                    </div>
+<form class="market-filters" method="GET" action="/listings">
+    <div class="filter-field filter-field--wide">
+        <label for="search">Destination</label>
+        <input id="search" name="search" type="search" value="<%= filters.search %>" placeholder="City, country, or stay name">
+    </div>
+    <div class="filter-field">
+        <label for="minPrice">Min price</label>
+        <input id="minPrice" name="minPrice" type="number" min="0" value="<%= filters.minPrice %>" placeholder="0">
+    </div>
+    <div class="filter-field">
+        <label for="maxPrice">Max price</label>
+        <input id="maxPrice" name="maxPrice" type="number" min="0" value="<%= filters.maxPrice %>" placeholder="10000">
+    </div>
+    <div class="filter-field">
+        <label for="sort">Sort</label>
+        <select id="sort" name="sort">
+            <option value="newest" <%= filters.sort === "newest" ? "selected" : "" %>>Newest</option>
+            <option value="price_low" <%= filters.sort === "price_low" ? "selected" : "" %>>Price: low to high</option>
+            <option value="price_high" <%= filters.sort === "price_high" ? "selected" : "" %>>Price: high to low</option>
+        </select>
+    </div>
+    <button class="btn btn-search" type="submit">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <span>Apply</span>
+    </button>
+    <% if(filters.search || filters.minPrice || filters.maxPrice || filters.sort !== "newest") { %>
+        <a href="/listings" class="text-link">Clear</a>
+    <% } %>
+</form>
+
+<div class="quick-filters" aria-label="Popular destination filters">
+    <% const quickFilters = [
+        { label: "Trending", icon: "fa-solid fa-fire", search: "" },
+        { label: "Rooms", icon: "fa-solid fa-bed", search: "room" },
+        { label: "Mountains", icon: "fa-solid fa-mountain-city", search: "mountain" },
+        { label: "Beach", icon: "fa-solid fa-umbrella-beach", search: "beach" },
+        { label: "Farms", icon: "fa-solid fa-cow", search: "farm" },
+        { label: "Castles", icon: "fa-brands fa-fort-awesome", search: "castle" },
+        { label: "Camping", icon: "fa-solid fa-tent", search: "camping" },
+    ]; %>
+    <% for (let filter of quickFilters) { %>
+        <a class="filter" href="<%= filter.search ? `/listings?search=${encodeURIComponent(filter.search)}` : '/listings' %>">
+            <i class="<%= filter.icon %>"></i>
+            <span><%= filter.label %></span>
+        </a>
+    <% } %>
+    <label class="tax-switch" for="flexSwitchCheckDefault">
+        <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault">
+        <span>Show taxes</span>
+    </label>
+</div>
+
+<% if(allListing.length === 0) { %>
+    <section class="empty-state">
+        <i class="fa-regular fa-map"></i>
+        <h2>No stays found</h2>
+        <p>Try a broader destination or remove the price filter.</p>
+        <a href="/listings" class="btn btn-dark">Reset search</a>
+    </section>
+<% } else { %>
+    <section class="stay-grid">
+        <% for(let listing of allListing) { 
+            const reviewArray = Array.isArray(listing.reviews) ? listing.reviews : [];
+            const reviewCount = reviewArray.length;
+            const ratingTotal = reviewArray.reduce((sum , review) => sum + (review.rating || 0) , 0);
+            const avgRatingValue = reviewCount ? ratingTotal / reviewCount : null;
+            const displayRating = avgRatingValue ? avgRatingValue.toFixed(2) : null;
+            const badgeText = avgRatingValue && avgRatingValue >= 4.5 && reviewCount >= 3 ? "Guest favourite" : null;
+            const locationLabel = listing.location || "";
+            const countryLabel = listing.country || "";
+            const imageUrl = listing.image && listing.image.url ? listing.image.url : "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80";
+        %>
+            <a href="/listings/<%= listing._id %>" class="stay-card linking-link">
+                <div class="stay-card__media">
+                    <img src="<%= imageUrl %>" alt="<%= listing.title %>">
+                    <% if(badgeText) { %>
+                        <span class="stay-card__badge"><%= badgeText %></span>
+                    <% } %>
+                    <span class="stay-card__wishlist" aria-hidden="true">
+                        <i class="fa-regular fa-heart"></i>
+                    </span>
                 </div>
-                <% if(locationLabel || countryLabel) { %>
+                <div class="stay-card__body">
+                    <div class="stay-card__title-row">
+                        <p class="stay-card__title"><%= listing.title %></p>
+                        <div class="stay-card__rating">
+                            <i class="fa-solid fa-star"></i>
+                            <span><%= displayRating ? displayRating : "New" %></span>
+                        </div>
+                    </div>
                     <p class="stay-card__meta">
                         <%= locationLabel %><%= locationLabel && countryLabel ? ", " : "" %><%= countryLabel %>
                     </p>
-                <% } else { %>
-                    <p class="stay-card__meta">India</p>
-                <% } %>
-                <p class="stay-card__price">
-                    &#8377; <%= listing.price.toLocaleString("en-IN") %>
-                    <span>night</span>
-                    <i class="tax-info">+18% GST</i>
-                </p>
-                <p class="stay-card__subtext">
-                    <% if(reviewCount) { %>
-                        <%= reviewCount %> review<%= reviewCount > 1 ? "s" : "" %>
-                    <% } else { %>
-                        Be the first to review
-                    <% } %>
-                </p>
-            </div>
-        </a>
-    <% } %>
-</section>
-
-<script>
-    let taxSwitch = document.getElementById("flexSwitchCheckDefault");
-    taxSwitch.addEventListener("click" , () => {
-        let taxInfo = document.getElementsByClassName("tax-info");
-        for(tax of taxInfo) {
-            if(tax.style.display != "inline")  {
-                tax.style.display = "inline";
-            } else { 
-                tax.style.display = "none";
-            }
-        }
-        console.log(tax.style.display);
-    })
-</script>
+                    <p class="stay-card__price">
+                        &#8377; <%= listing.price.toLocaleString("en-IN") %>
+                        <span>night</span>
+                        <i class="tax-info">+18% GST</i>
+                    </p>
+                    <p class="stay-card__subtext">
+                        <% if(reviewCount) { %>
+                            <%= reviewCount %> review<%= reviewCount > 1 ? "s" : "" %>
+                        <% } else { %>
+                            Be the first to review
+                        <% } %>
+                    </p>
+                </div>
+            </a>
+        <% } %>
+    </section>
+<% } %>

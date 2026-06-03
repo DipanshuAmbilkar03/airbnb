@@ -4,12 +4,11 @@ module.exports.renderSignUpForm = (req,res) => {
     res.render("./user/signup.ejs");
 }
 
-module.exports.SignUp = async(req,res) => {
+module.exports.SignUp = async(req,res,next) => {
     try {
         let { username, email ,password} = req.body;
-        const newUser = new User({username , email});
+        const newUser = new User({username: username.trim(), email: email.trim().toLowerCase()});
         const registeredUser = await User.register(newUser , password);
-        console.log(registeredUser);
 
         req.login(registeredUser,(err)=>{
             if(err) {
@@ -26,7 +25,7 @@ module.exports.SignUp = async(req,res) => {
 }
 
 module.exports.renderLoginForm = (req, res) => {
-    res.render("./user/login.ejs", { messages: req.flash() }); // Pass messages to template
+    res.render("./user/login.ejs", { messages: req.flash() });
 }
 
 module.exports.Login = async(req,res) => {

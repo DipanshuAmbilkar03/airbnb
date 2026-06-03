@@ -1,15 +1,13 @@
 const express = require("express");
-const router = express();
+const router = express.Router();
 const wrapAsync = require("../utils/wrapAsync.js");
-const { isLoggedIn , isowner, validateFunc } = require("../middleware.js");
+const { isLoggedIn , isowner, validateFunc, validateObjectId, verifyMultipartCsrfToken } = require("../middleware.js");
 
 // controller
 const listingController = require("../controllers/listings");
 
 // multer (for handling multipart/form-data)  => basically image uploads <= 
-const multer  = require('multer');
-const {storage} = require("../cloudConfig.js");
-const upload = multer({ storage });
+const { upload } = require("../cloudConfig.js");
 
 
 // router.route path for ("/") 
@@ -18,6 +16,7 @@ router.route("/")
         wrapAsync(listingController.index))
     .post(isLoggedIn,
         upload.single('listing[image]'),
+        verifyMultipartCsrfToken,
         validateFunc,
         wrapAsync(listingController.createListing)
     )
@@ -30,25 +29,26 @@ router.get("/new",
 
 // router.route path for ("/:id") 
 router.route("/:id")
+    .all(validateObjectId("id"))
     .get(
         wrapAsync(listingController.showListings))
     .put(isLoggedIn,isowner,
         upload.single('listing[image]'),
+        verifyMultipartCsrfToken,
         validateFunc, 
         wrapAsync(listingController.updateListing)
+    )
+    .delete(isLoggedIn,
+        isowner,
+        wrapAsync(listingController.destroyListing)
     )
 
 // edit route
 router.get("/:id/edit" 
+        ,validateObjectId("id")
         ,isLoggedIn
             ,isowner
                 ,wrapAsync(listingController.editListing)
-)
-// delete route 
-router.get("/:id/delete" 
-    ,isLoggedIn
-        ,isowner
-            ,wrapAsync(listingController.destroyListing)
 )
 
 module.exports = router;

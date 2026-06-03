@@ -2,13 +2,14 @@ const express = require("express");
 const router = express.Router({mergeParams:true});
 const wrapAsync = require("../utils/wrapAsync");
 const passport = require("passport");
-const { saveRedirectUrl } = require("../middleware.js");
+const { saveRedirectUrl, validateUser } = require("../middleware.js");
 const userController = require("../controllers/user.js");
+const homeController = require("../controllers/home.js");
 
 // signup (router.route)
 router.route("/signup")
     .get(userController.renderSignUpForm)
-    .post(wrapAsync(userController.SignUp)
+    .post(validateUser, wrapAsync(userController.SignUp)
 );
 
 // login User (router.route)
@@ -20,13 +21,11 @@ router.route("/login")
             ,(userController.Login)
 );
 // logout 
-router.get("/logout" 
+router.post("/logout" 
     ,userController.logOut
 );
 
-router.get("/",(req,res) => {
-    res.redirect("./listings");
-})
+router.get("/", wrapAsync(homeController.renderHome));
 
 
 module.exports = router;

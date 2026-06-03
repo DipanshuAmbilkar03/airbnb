@@ -1,12 +1,13 @@
 const express = require("express");
 const router = express.Router({mergeParams:true});
 const wrapAsync = require("../utils/wrapAsync.js"); 
-const { validateReview , isLoggedIn ,isReviewAuthor} = require("../middleware.js");
+const { validateReview , isLoggedIn ,isReviewAuthor, validateObjectId } = require("../middleware.js");
 // const { createReview } = require("../controllers/reviews.js");
 const reviewController = require("../controllers/reviews.js");
 
 // Review
 router.post("/" 
+    ,validateObjectId("id")
     ,isLoggedIn
         ,validateReview
         ,wrapAsync(reviewController.createReview)
@@ -14,7 +15,10 @@ router.post("/"
 
 // delete the review
 router.delete("/:reviewId"
-    ,isReviewAuthor
+    ,validateObjectId("id")
+    ,validateObjectId("reviewId")
+    ,isLoggedIn
+        ,isReviewAuthor
         ,wrapAsync(reviewController.destroyReview)
 );
 

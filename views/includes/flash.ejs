@@ -1,7 +1,7 @@
 <!-- success alert -->
 <% if(success && success.length) { %>
-    <div class="alert alert-success alert-dismissible fade show cols-6 " role="alert">
-        <%= success %>
+    <div class="alert alert-success alert-dismissible fade show app-alert" role="alert">
+        <%= success.join(" ") %>
         <button class="btn-close" type="button" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     
@@ -9,8 +9,8 @@
 
 <!-- error alert -->
 <% if(error && error.length) { %>
-    <div class="alert alert-danger alert-dismissible fade show cols-6 " role="alert">
-        <%= error %>
+    <div class="alert alert-danger alert-dismissible fade show app-alert" role="alert">
+        <%= error.join(" ") %>
         <button class="btn-close" type="button" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     

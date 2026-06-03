@@ -2,3 +2,6 @@
 node_modules/
 details/
 .sixth/
+scripts/
+*.log
+.env.example

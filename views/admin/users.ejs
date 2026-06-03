@@ -1,0 +1,63 @@
+<% layout("./layouts/boilerplate") %>
+
+<section class="admin-shell">
+    <div class="admin-heading">
+        <div>
+            <p class="eyebrow">Admin</p>
+            <h1>Users</h1>
+        </div>
+        <div class="admin-tabs">
+            <a href="/admin">Dashboard</a>
+            <a href="/admin/listings">Listings</a>
+            <a href="/admin/reviews">Reviews</a>
+        </div>
+    </div>
+
+    <div class="admin-table-wrap">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Joined</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% for (let user of users) { %>
+                    <tr>
+                        <td>
+                            <strong><%= user.username %></strong>
+                            <small><%= user._id %></small>
+                        </td>
+                        <td><%= user.email %></td>
+                        <td>
+                            <span class="role-pill <%= user.isAdmin ? 'role-pill--admin' : '' %>">
+                                <%= user.isAdmin ? "Admin" : "User" %>
+                            </span>
+                        </td>
+                        <td><%= user.createdAt ? user.createdAt.toLocaleDateString("en-IN") : "Existing user" %></td>
+                        <td>
+                            <div class="admin-actions">
+                                <% if(user.isAdmin) { %>
+                                    <form method="POST" action="/admin/users/<%= user._id %>/admin?_method=PUT">
+                                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                        <input type="hidden" name="isAdmin" value="false">
+                                        <button class="btn btn-outline-danger btn-sm" type="submit" <%= currUser && currUser._id.equals(user._id) ? "disabled" : "" %>>Remove admin</button>
+                                    </form>
+                                <% } else { %>
+                                    <form method="POST" action="/admin/users/<%= user._id %>/admin?_method=PUT">
+                                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                        <input type="hidden" name="isAdmin" value="true">
+                                        <button class="btn btn-dark btn-sm" type="submit">Make admin</button>
+                                    </form>
+                                <% } %>
+                            </div>
+                        </td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+</section>

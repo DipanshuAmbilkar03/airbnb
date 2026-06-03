@@ -1,0 +1,51 @@
+<% layout("./layouts/boilerplate") %>
+
+<section class="admin-shell">
+    <div class="admin-heading">
+        <div>
+            <p class="eyebrow">Admin</p>
+            <h1>Listings</h1>
+        </div>
+        <div class="admin-tabs">
+            <a href="/admin">Dashboard</a>
+            <a href="/admin/users">Users</a>
+            <a href="/admin/reviews">Reviews</a>
+        </div>
+    </div>
+
+    <div class="admin-table-wrap">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Listing</th>
+                    <th>Location</th>
+                    <th>Owner</th>
+                    <th>Price</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% for (let listing of listings) { %>
+                    <tr>
+                        <td>
+                            <strong><%= listing.title %></strong>
+                            <small><%= listing._id %></small>
+                        </td>
+                        <td><%= listing.location %>, <%= listing.country %></td>
+                        <td><%= listing.owner && listing.owner.username ? listing.owner.username : "No owner" %></td>
+                        <td>&#8377; <%= listing.price.toLocaleString("en-IN") %></td>
+                        <td>
+                            <div class="admin-actions">
+                                <a class="btn btn-dark btn-sm" href="/listings/<%= listing._id %>">View</a>
+                                <form method="POST" action="/admin/listings/<%= listing._id %>?_method=DELETE">
+                                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                    <button class="btn btn-outline-danger btn-sm" type="submit">Remove</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+</section>

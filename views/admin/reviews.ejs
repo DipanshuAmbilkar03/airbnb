@@ -1,0 +1,58 @@
+<% layout("./layouts/boilerplate") %>
+
+<section class="admin-shell">
+    <div class="admin-heading">
+        <div>
+            <p class="eyebrow">Admin</p>
+            <h1>Reviews</h1>
+        </div>
+        <div class="admin-tabs">
+            <a href="/admin">Dashboard</a>
+            <a href="/admin/listings">Listings</a>
+            <a href="/admin/users">Users</a>
+        </div>
+    </div>
+
+    <div class="admin-table-wrap">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Review</th>
+                    <th>Author</th>
+                    <th>Listing</th>
+                    <th>Rating</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% for (let review of reviews) {
+                    const listing = listingByReviewId.get(review._id.toString());
+                %>
+                    <tr>
+                        <td>
+                            <strong><%= review.comment.length > 90 ? `${review.comment.slice(0, 90)}...` : review.comment %></strong>
+                            <small><%= review._id %></small>
+                        </td>
+                        <td><%= review.author && review.author.username ? review.author.username : "Guest" %></td>
+                        <td>
+                            <% if (listing) { %>
+                                <a href="/listings/<%= listing._id %>" class="text-link"><%= listing.title %></a>
+                            <% } else { %>
+                                Missing listing
+                            <% } %>
+                        </td>
+                        <td><%= review.rating %> stars</td>
+                        <td>
+                            <div class="admin-actions">
+                                <form method="POST" action="/admin/reviews/<%= review._id %>?_method=DELETE">
+                                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                    <button class="btn btn-outline-danger btn-sm" type="submit">Remove</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+</section>

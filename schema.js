@@ -2,13 +2,14 @@ const Joi = require('joi');
 
 module.exports.listingSchema = Joi.object({
     listing: Joi.object({
-        title: Joi.string().required(),
-        description: Joi.string().required(),
+        title: Joi.string().trim().min(3).max(120).required(),
+        description: Joi.string().trim().min(20).max(2000).required(),
         image: Joi.string().uri().allow("",null).optional(),        
-        price: Joi.number().min(0).required(),
-        location: Joi.string().required(),
-        country: Joi.string().required(),
-    }).required()  
+        price: Joi.number().min(0).max(10000000).required(),
+        location: Joi.string().trim().min(2).max(120).required(),
+        country: Joi.string().trim().min(2).max(120).required(),
+    }).required(),
+    _csrf: Joi.string().optional(),
 });
 
 // module.exports.reviewSchema = Joi.object({
@@ -30,7 +31,15 @@ module.exports.reviewSchema = Joi.object({
         'string.empty': 'Comment is required.',
       }),
     }).required(),
+    _csrf: Joi.string().optional(),
   });
+
+module.exports.userSchema = Joi.object({
+  username: Joi.string().trim().alphanum().min(3).max(30).required(),
+  email: Joi.string().trim().email().max(254).required(),
+  password: Joi.string().min(8).max(128).required(),
+  _csrf: Joi.string().optional(),
+});
 
 // const Joi = require('joi');
 

@@ -1,57 +1,30 @@
 <% layout("./layouts/boilerplate") %>
 
-<div class="col-8 offset-2">
-    <h1>WanderLust</h1>
-    <h4>Signup</h4>
-</div>
-<div class="row">
-    <div class="col-8 offset-2">
-        <form action="/signup" method="POST" class="needs-validation" novalidate>
-            <div class="mb-3">
-                <label for="username" class="form-label">Username</label>
-                <input name="username"
-                        type="text" 
-                            class="form-control"
-                                id="username"
-                                    required>
-                <div class="valid-feedback">
-                    Looks Good!.
-                </div>
-                <div class="invalid-feedback">
-                    Please enter the username
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <label for="email" class="form-label">Email</label>
-                <input name="email"
-                        type="text" 
-                            class="form-control"
-                                id="email"
-                                    required>
-                <div class="valid-feedback">
-                    Looks Good!.
-                </div>
-                <div class="invalid-feedback">
-                    Please enter the email
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <label for="password" class="form-label">password</label>
-                <input name="password"
-                        type="password" 
-                            class="form-control"
-                                id="password"
-                                    required>
-                <div class="valid-feedback">
-                    Looks Good!.
-                </div>
-                <div class="invalid-feedback">
-                    Please enter the password
-                </div>
-            </div>
-            <button class="btn btn-success">SignUp</button>
-        </form>
+<section class="auth-shell">
+    <div class="form-heading">
+        <p class="eyebrow">Join WanderLust</p>
+        <h1>Create account</h1>
     </div>
-</div>
+    <form action="/signup" method="POST" class="needs-validation auth-form" novalidate>
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div class="mb-3">
+            <label for="username" class="form-label">Username</label>
+            <input name="username" type="text" class="form-control" id="username" minlength="3" maxlength="30" pattern="[A-Za-z0-9]+" required autocomplete="username">
+            <div class="invalid-feedback">Use 3-30 letters or numbers.</div>
+        </div>
+
+        <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input name="email" type="email" class="form-control" id="email" maxlength="254" required autocomplete="email">
+            <div class="invalid-feedback">Please enter a valid email.</div>
+        </div>
+
+        <div class="mb-4">
+            <label for="password" class="form-label">Password</label>
+            <input name="password" type="password" class="form-control" id="password" minlength="8" maxlength="128" required autocomplete="new-password">
+            <div class="invalid-feedback">Use at least 8 characters.</div>
+        </div>
+        <button class="btn btn-dark" type="submit">Sign up</button>
+        <p class="auth-switch">Already have an account? <a href="/login">Log in</a></p>
+    </form>
+</section>

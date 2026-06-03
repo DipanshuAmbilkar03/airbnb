@@ -1,10 +1,8 @@
 <% layout("/layouts/boilerplate") %>
 
-<div class="row mt-3">
-    <div class="alert alert-danger col-6 offset-2" role="alert">
-        <p class="alert-heading"><%= err.message  %></p>
-        
-        <!-- stack error not required -->
-        <!-- <p><%= err.stack %></p> -->
-    </div>
-</div>
+<section class="empty-state error-state">
+    <i class="fa-regular fa-circle-xmark"></i>
+    <h1><%= err.statusCode || 500 %></h1>
+    <p><%= err.message  %></p>
+    <a href="/listings" class="btn btn-dark">Explore stays</a>
+</section>

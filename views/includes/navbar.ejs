@@ -1,30 +1,17 @@
-<style>
-  .btn-search {
-    background: #fe424d;
-    color : #fff;
-    border-radius: 25px;
-    padding: 0 1rem 0 1rem;
-  } 
-  
-  .btn-search i {
-    display: inline;
-    margin-right: 0.5rem;
-  } 
-  .search-inp {
-    border-radius : 25px;
-    padding: 0.5rem 3rem 0.5rem 3rem;
-    font-size: 1rem;
-  }
-</style>
-
-<nav class="navbar navbar-expand-md bg-body-light border-bottom sticky-top  ">
+<nav class="navbar navbar-expand-md border-bottom sticky-top app-navbar">
   <div class="container-fluid">
-    <a class="navbar-brand" href="/listings"><i class="fa-regular fa-compass"></i></a>
+    <a class="navbar-brand brand-lockup" href="/">
+      <i class="fa-regular fa-compass"></i>
+      <span>WanderLust</span>
+    </a>
     <button  
       class="navbar-toggler" 
         type="button" 
           data-bs-toggle="collapse" 
-            data-bs-target="#navbarNavAltMarkup">
+            data-bs-target="#navbarNavAltMarkup"
+            aria-controls="navbarNavAltMarkup"
+            aria-expanded="false"
+            aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
@@ -33,20 +20,29 @@
       </div>
 
       <div class="navbar-nav ms-auto">
-        <form class="d-flex" role="search">
-          <input class="search-inp form-control me-2" type="search" placeholder="Search destinations">
-          <button class="btn btn-search" type="submit"><i class="fa-solid fa-magnifying-glass"></i>Search</button>
+        <form class="d-flex nav-search" role="search" method="GET" action="/listings">
+          <input class="search-inp form-control" name="search" type="search" placeholder="Search destinations" value="<%= searchQuery %>">
+          <button class="btn btn-search" type="submit" aria-label="Search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <span>Search</span>
+          </button>
         </form>
       </div>
 
       <div class="navbar-nav ms-auto">
-        <a class="nav-link" href="/listings/new">Wanderlust your home</a>
+        <a class="nav-link" href="/listings/new">Host your place</a>
+        <% if(currUser && currUser.isAdmin) { %>
+          <a class="nav-link" href="/admin"><b>Admin</b></a>
+        <% } %>
         <% if(!currUser) { %>
-          <a class="nav-link" href="/signup"><b>SignUp</b></a>
-          <a class="nav-link" href="/login"><b>login</b></a>
+          <a class="nav-link" href="/signup"><b>Sign up</b></a>
+          <a class="nav-link" href="/login"><b>Log in</b></a>
           <% } %>
           <% if(currUser) { %>
-            <a class="nav-link" href="/logout"><b>Logout</b></a>
+            <form class="nav-logout" method="POST" action="/logout">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <button class="nav-link" type="submit"><b>Logout</b></button>
+            </form>
           <% } %>
       </div>
     </div>
